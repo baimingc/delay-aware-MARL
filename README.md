@@ -1,55 +1,33 @@
-# MADDPG-PyTorch
-PyTorch Implementation of MADDPG from [*Multi-Agent Actor-Critic for Mixed
-Cooperative-Competitive Environments*](https://arxiv.org/abs/1706.02275) (Lowe et. al. 2017)
-
+# Delay-Aware Multi-Agent Reinforcement Learning
+<p align=center>
+<img src="assets/damarl.png" width=600>
+</p>
+**Abstract** Action and observation delays exist prevalently in the real-world cyber-physical systems which may pose challenges in reinforcement learning design. It is particularly an arduous task when handling multi-agent systems where the delay of one agent could spread to other agents. To resolve this problem, this paper proposes a novel framework to deal with delays as well as the non-stationary training issue of multi-agent tasks with model-free deep reinforcement learning. We formally define the Delay-Aware Markov Game that incorporates the delays of all agents in the environment. To solve Delay-Aware Markov Games, we apply centralized training and decentralized execution that allows agents to use extra information to ease the non-stationary issue of the multi-agent systems during training, without the need of a centralized controller during execution. Experiments are conducted in multi-agent particle environments including cooperative communication, cooperative navigation, and competitive experiments. We also test the proposed algorithm in traffic scenarios that require coordination of all autonomous vehicles to show the practical value of delay-awareness. Results show that the proposed delay-aware multi-agent reinforcement learning algorithm greatly alleviates the performance degradation introduced by delay.
 ## Requirements
 
 * [OpenAI baselines](https://github.com/openai/baselines), commit hash: 98257ef8c9bd23a24a330731ae54ed086d9ce4a7
-* My [fork](https://github.com/shariqiqbal2810/multiagent-particle-envs) of Multi-agent Particle Environments
+* Multi-agent Particle Environments(https://github.com/shariqiqbal2810/multiagent-particle-envs)
 * [PyTorch](http://pytorch.org/), version: 0.3.0.post4
 * [OpenAI Gym](https://github.com/openai/gym), version: 0.9.4
 * [Tensorboard](https://github.com/tensorflow/tensorboard), version: 0.4.0rc3 and [Tensorboard-Pytorch](https://github.com/lanpa/tensorboard-pytorch), version: 1.0 (for logging)
 
-The versions are just what I used and not necessarily strict requirements.
-
-## How to Run
-
-All training code is contained within `main.py`. To view options simply run:
-
-```
-python main.py --help
-```
 
 ## Results
 
-### Physical Deception
+### Cooperative communication
 
-In this task, the two blue agents are rewarded by minimizing the closest of their distances to the green landmark (only one needs to be close to get optimal reward), while maximizing the distance of the red adversary from the green landmark. The red adversary is rewarded by minimizing it's distance to the green landmark; however, on any given trial, it does not know which landmark is green, so it must follow the blue agents. As such, the blue agents should learn to deceive the red agent by covering *both* landmarks.
+Two cooperating agents are involved in this task, a speaker and a listener. They are spawned in an environment with three landmarks of different colors. The goal of the listener is to navigate to a landmark of a particular color. However, the listener can only observe the relative position and color of the landmarks, excluding which landmark it must navigate to. On the contrary, the speaker knows the color of the goal landmark, and it can send out a message at each time step which is heard by the listener. Therefore, to finish the cooperative task, the speaker must learn to output the correct landmark color. 
 
-<img src="assets/physical_deception/1.gif?raw=true" width="33%"> <img src="assets/physical_deception/2.gif?raw=true" width="33%"> <img src="assets/physical_deception/3.gif?raw=true" width="33%">
+<img src="assets/cooperative_communication_1.gif?raw=true" width="33%"> <img src="assets/cooperative_communication_2.gif?raw=true" width="33%">
 
-### Cooperative Communication
+### Cooperative navigation
 
-This task involves two agents, one that is stationary and one that can move. The stationary agent sees the color of the other agent as its observation, and outputs a one-hot communication vector as its action. The moving agent receives the communication vector, as well as its relative distance to all landmarks on the screen; however, it does not know its own color. The goal of both agents is for the moving agent to reach the landmark that matches its own color. Thus, the agents must learn to communicate such that the moving agent knows where to go on each randomized trial.
+ In this environment, three agents must collaborate to 'cover' all of the three landmarks in the environment by movement. In addition, these agents occupy a large physical space and are punished when they collide with each other.
 
-<img src="assets/cooperative_communication/1.gif?raw=true" width="33%"> <img src="assets/cooperative_communication/2.gif?raw=true" width="33%"> <img src="assets/cooperative_communication/3.gif?raw=true" width="33%">
+<img src="assets/cooperative_navigation_1.gif?raw=true" width="33%"> <img src="assets/cooperative_navigation_2.gif?raw=true" width="33%">
 
-### Predator-Prey
+### Predator-prey
 
-This task involves a single prey agent (in green) and a team of three predators (in red). The prey agent is 30% faster than the predators, so the predators must learn how to team up in order to catch the prey.
+In this environment, three slower cooperative predators must catch up with a faster prey in a randomly generated environment, with two large landmarks blocking the way. Each time a collaborating predator collides with the prey, the predators will be rewarded and the prey will be punished. The agents can observe the relative position and speed of other agents as well as the positions of the landmarks.
 
-In the trials below, the prey agent uses DDPG as its learning algorithm.
-
-<img src="assets/predator_prey/1.gif?raw=true" width="33%"> <img src="assets/predator_prey/2.gif?raw=true" width="33%"> <img src="assets/predator_prey/3.gif?raw=true" width="33%">
-
-## Not Implemented
-
-There are a few items from the paper that have not been implemented in this repo
-
-* Ensemble Training
-* Inferring other agents' policies
-* Mixed continuous/discrete action spaces
-
-## Acknowledgements
-
-The OpenAI baselines [Tensorflow implementation](https://github.com/openai/baselines/tree/master/baselines/ddpg) and Ilya Kostrikov's [Pytorch implementation](https://github.com/ikostrikov/pytorch-ddpg-naf) of DDPG were used as references. After the majority of this codebase was complete, OpenAI released their [code](https://github.com/openai/maddpg) for MADDPG, and I made some tweaks to this repo to reflect some of the details in their implementation (e.g. gradient norm clipping and policy regularization).
+<img src="assets/predator_prey_1.gif?raw=true" width="33%"> <img src="assets/predator_prey_2.gif?raw=true" width="33%">
