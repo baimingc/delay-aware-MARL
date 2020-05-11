@@ -2,7 +2,9 @@
 <p align=center>
 <img src="assets/damarl.png" width=600>
 </p>
+
 **Abstract** Action and observation delays exist prevalently in the real-world cyber-physical systems which may pose challenges in reinforcement learning design. It is particularly an arduous task when handling multi-agent systems where the delay of one agent could spread to other agents. To resolve this problem, this paper proposes a novel framework to deal with delays as well as the non-stationary training issue of multi-agent tasks with model-free deep reinforcement learning. We formally define the Delay-Aware Markov Game that incorporates the delays of all agents in the environment. To solve Delay-Aware Markov Games, we apply centralized training and decentralized execution that allows agents to use extra information to ease the non-stationary issue of the multi-agent systems during training, without the need of a centralized controller during execution. Experiments are conducted in multi-agent particle environments including cooperative communication, cooperative navigation, and competitive experiments. We also test the proposed algorithm in traffic scenarios that require coordination of all autonomous vehicles to show the practical value of delay-awareness. Results show that the proposed delay-aware multi-agent reinforcement learning algorithm greatly alleviates the performance degradation introduced by delay.
+
 ## Requirements
 
 * [OpenAI baselines](https://github.com/openai/baselines), commit hash: 98257ef8c9bd23a24a330731ae54ed086d9ce4a7
