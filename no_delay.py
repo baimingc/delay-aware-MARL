@@ -86,18 +86,10 @@ def run(config):
             torch_obs = [Variable(torch.Tensor(np.vstack(obs[:, i])),
                                   requires_grad=False)
                          for i in range(maddpg.nagents)]
-            # get actions as torch Variables
-#             print(obs)
             torch_agent_actions = maddpg.step(torch_obs, explore=True)
-            # convert actions to numpy arrays
             agent_actions = [ac.data.numpy() for ac in torch_agent_actions]
-            # print(agent_actions)
-            # rearrange actions to be per environment
-
             actions = [[ac[i] for ac in agent_actions] for i in range(config.n_rollout_threads)]
-#             print(actions)
             next_obs, rewards, dones, infos = env.step(copy.deepcopy(actions))
-#             print(rewards)
             replay_buffer.push(obs, agent_actions, rewards, next_obs, dones)
 
             
@@ -123,11 +115,9 @@ def run(config):
                                                           to_gpu=USE_CUDA)
                             maddpg.update(sample, a_i, logger=logger)
                         maddpg.update_all_targets()
-#                 maddpg.prep_rollouts(device='gpu')
         ep_rews = replay_buffer.get_average_rewards(
             config.episode_length * config.n_rollout_threads)
         for a_i, a_ep_rew in enumerate(ep_rews):
-            # logger.add_scalar('agent%i/mean_episode_rewards' % a_i, a_ep_rew, ep_i)
             logger.add_scalars('agent%i/mean_episode_rewards' % a_i, {'reward': a_ep_rew}, ep_i)
 
         if ep_i % config.save_interval < config.n_rollout_threads:

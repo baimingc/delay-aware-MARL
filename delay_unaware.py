@@ -65,29 +65,12 @@ def run(config):
                           hidden_dim=config.hidden_dim,
                           file_name = model_path)
     else:
-#     maddpg = MADDPG.init_runner_from_save(model_path)
         maddpg = MADDPG.init_from_env(env, agent_alg=config.agent_alg,
                                       adversary_alg=config.adversary_alg,
                                       tau=config.tau,
                                       lr=config.lr,
                                       hidden_dim=config.hidden_dim)
     
-    
-#     model_path = (Path('./models') / config.env_id / config.model_name /
-#                   ('run%i' % config.run_num))
-#     model_path = model_path / 'model.pt'
-# #     maddpg = MADDPG.init_from_env_with_runner_delay_unaware(model_path)
-#     maddpg = MADDPG.init_from_env_with_runner_delay_unaware(env, agent_alg=config.agent_alg,
-#                               adversary_alg=config.adversary_alg,
-#                               tau=config.tau,
-#                               lr=config.lr,
-#                               hidden_dim=config.hidden_dim,
-#                               file_name = model_path)
-# #     maddpg = MADDPG.init_from_env(env, agent_alg=config.agent_alg,
-# #                                   adversary_alg=config.adversary_alg,
-# #                                   tau=config.tau,
-# #                                   lr=config.lr,
-# #                                   hidden_dim=config.hidden_dim)
     replay_buffer = ReplayBuffer(config.buffer_length, maddpg.nagents,
                                  [obsp.shape[0] for obsp in env.observation_space],
                                  [acsp.shape[0] if isinstance(acsp, Box) else acsp.n
@@ -99,7 +82,6 @@ def run(config):
                                         ep_i + 1 + config.n_rollout_threads,
                                         config.n_episodes))
         obs = env.reset()
-        # obs.shape = (n_rollout_threads, nagent)(nobs), nobs differs per agent so not tensor
         maddpg.prep_rollouts(device='gpu')
 
         explr_pct_remaining = max(0, config.n_exploration_eps - ep_i) / config.n_exploration_eps
@@ -116,7 +98,6 @@ def run(config):
         last_agent_actions = [zero_agent_actions for _ in range(delay_step)]
 
         for et_i in range(config.episode_length):
-            # rearrange observations to be per agent, and convert to torch Variable
             torch_obs = [Variable(torch.Tensor(np.vstack(obs[:, i])),
                                   requires_grad=False)
                          for i in range(maddpg.nagents)]
@@ -124,25 +105,15 @@ def run(config):
             torch_agent_actions = maddpg.step(torch_obs, explore=True)
             # convert actions to numpy arrays
             agent_actions = [ac.data.numpy() for ac in torch_agent_actions]
-#             print('1',agent_actions)
-            # rearrange actions to be per environment
-#             print(agent_actions, last_agent_actions[0])
             if config.load_adv:
                 if delay_step == 0:
                     actions = [[ac[i] for ac in agent_actions] for i in range(config.n_rollout_threads)]
                 else:
                     agent_actions_tmp = [[ac[i] for ac in agent_actions] for i in range(config.n_rollout_threads)][0][:]
-    #                 print('2', agent_actions_tmp)
                     actions = last_agent_actions[0]
-    #                 print('3', actions)
                     actions.append(agent_actions_tmp[-1])
-    #                 print(actions)
-    #                 print('4', actions)
                     last_agent_actions = last_agent_actions[1:]
-    #                 print('3', last_agent_actions)
                     last_agent_actions.append(agent_actions_tmp[:2])
-    #                 print('4', last_agent_actions)
-    #                 print('5', actions)
                 actions = [actions]
                 next_obs, rewards, dones, infos = env.step(copy.deepcopy(actions))
 
@@ -185,7 +156,6 @@ def run(config):
         ep_rews = replay_buffer.get_average_rewards(
             config.episode_length * config.n_rollout_threads)
         for a_i, a_ep_rew in enumerate(ep_rews):
-            # logger.add_scalar('agent%i/mean_episode_rewards' % a_i, a_ep_rew, ep_i)
             logger.add_scalars('agent%i/mean_episode_rewards' % a_i, {'reward': a_ep_rew}, ep_i)
 
         if ep_i % config.save_interval < config.n_rollout_threads:

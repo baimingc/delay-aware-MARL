@@ -33,3 +33,8 @@ Two cooperating agents are involved in this task, a speaker and a listener. They
 In this environment, three slower cooperative predators must catch up with a faster prey in a randomly generated environment, with two large landmarks blocking the way. Each time a collaborating predator collides with the prey, the predators will be rewarded and the prey will be punished. The agents can observe the relative position and speed of other agents as well as the positions of the landmarks.
 
 <img src="assets/predator_prey_1.gif?raw=true" width="33%"> <img src="assets/predator_prey_2.gif?raw=true" width="33%">
+
+### Unsignalized intersection
+This scenario consists of four vehicles coming from four directions (north, south, west, east) of the intersection, respectively. The goal of the vehicles is to take a left turn at the intersection. The environment is provided at https://github.com/baimingc/highway_multiagent_env.
+
+<img src="assets/multiagent_intersection.gif?raw=true" width="33%"> <img src="assets/multiagent_intersection1.gif?raw=true" width="33%">
